@@ -4,11 +4,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-DB_NAME = os.getenv("DB_NAME", "timetable_optimizer")
-DB_PORT = int(os.getenv("DB_PORT", 3306))
+def _get_secret(key, fallback_env, default=""):
+    """Read from Streamlit secrets if available, else env vars."""
+    try:
+        import streamlit as st
+        return st.secrets.get(key, os.getenv(fallback_env, default))
+    except Exception:
+        return os.getenv(fallback_env, default)
+
+DB_HOST     = _get_secret("DB_HOST",     "DB_HOST",     "localhost")
+DB_USER     = _get_secret("DB_USER",     "DB_USER",     "root")
+DB_PASSWORD = _get_secret("DB_PASSWORD", "DB_PASSWORD", "")
+DB_NAME     = _get_secret("DB_NAME",     "DB_NAME",     "timetable_optimizer")
+DB_PORT     = int(_get_secret("DB_PORT", "DB_PORT",     "3306"))
 
 def get_conn(use_db=True):
     try:

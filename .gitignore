@@ -12,6 +12,7 @@ env/
 # Local configuration
 .env
 .env.local
+.streamlit/secrets.toml
 
 # OS files
 .DS_Store
