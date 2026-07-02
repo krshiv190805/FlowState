@@ -69,27 +69,44 @@ def seed_db():
     random.seed(42)
 
     preftimes = ["Morning", "Afternoon", "Night"]
-    for i in range(1, 21):
-        u_id = execute_query(
-            "INSERT INTO users (name, email) VALUES (%s, %s)",
-            (f"Student {i}", f"student{i}@example.com"),
-            commit=True
-        )
-        pref = random.choice(preftimes)
-        sleep = random.choice([6.0, 7.0, 8.0, 9.0])
-        gym = random.choice([0.0, 1.0, 1.5, 2.0])
-        study = random.choice([2.0, 3.0, 4.0, 5.0, 6.0])
 
-        execute_query(
-            "INSERT INTO preferences (user_id, sleep_hours, gym_hours, study_hours_per_day, preferred_study_time) "
-            "VALUES (%s, %s, %s, %s, %s)",
-            (u_id, sleep, gym, study, pref),
-            commit=True
-        )
-
-        for s in ["Math", "CS", "Physics"]:
-            execute_query(
-                "INSERT INTO subjects (user_id, subject_name) VALUES (%s, %s)",
-                (u_id, s),
-                commit=True
+    # Use a SINGLE connection for all seed inserts so FK checks always
+    # see the parent (user) row in the same transaction — avoids cross-connection
+    # FK visibility issues on Aiven MySQL.
+    conn = get_conn()
+    cursor = conn.cursor()
+    try:
+        for i in range(1, 21):
+            cursor.execute(
+                "INSERT INTO users (name, email) VALUES (%s, %s)",
+                (f"Student {i}", f"student{i}@example.com")
             )
+            u_id = cursor.lastrowid
+
+            pref  = random.choice(preftimes)
+            sleep = random.choice([6.0, 7.0, 8.0, 9.0])
+            gym   = random.choice([0.0, 1.0, 1.5, 2.0])
+            study = random.choice([2.0, 3.0, 4.0, 5.0, 6.0])
+
+            cursor.execute(
+                "INSERT INTO preferences "
+                "(user_id, sleep_hours, gym_hours, study_hours_per_day, preferred_study_time) "
+                "VALUES (%s, %s, %s, %s, %s)",
+                (u_id, sleep, gym, study, pref)
+            )
+
+            for s in ["Math", "CS", "Physics"]:
+                cursor.execute(
+                    "INSERT INTO subjects (user_id, subject_name) VALUES (%s, %s)",
+                    (u_id, s)
+                )
+
+        conn.commit()
+        print("Database seeded successfully.")
+    except Exception as e:
+        conn.rollback()
+        print(f"Seed error: {e}")
+        raise e
+    finally:
+        cursor.close()
+        conn.close()
