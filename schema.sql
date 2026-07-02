@@ -1,28 +1,17 @@
-CREATE DATABASE IF NOT EXISTS timetable_optimizer;
-USE timetable_optimizer;
-
-DROP TABLE IF EXISTS generated_schedules;
-DROP TABLE IF EXISTS preferences;
-DROP TABLE IF EXISTS clubs;
-DROP TABLE IF EXISTS assignments;
-DROP TABLE IF EXISTS classes;
-DROP TABLE IF EXISTS subjects;
-DROP TABLE IF EXISTS users;
-
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE
 );
 
-CREATE TABLE subjects (
+CREATE TABLE IF NOT EXISTS subjects (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     subject_name VARCHAR(100) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE classes (
+CREATE TABLE IF NOT EXISTS classes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     subject_name VARCHAR(100) NOT NULL,
@@ -32,7 +21,7 @@ CREATE TABLE classes (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE assignments (
+CREATE TABLE IF NOT EXISTS assignments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     title VARCHAR(200) NOT NULL,
@@ -43,7 +32,7 @@ CREATE TABLE assignments (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE clubs (
+CREATE TABLE IF NOT EXISTS clubs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     club_name VARCHAR(100) NOT NULL,
@@ -53,7 +42,7 @@ CREATE TABLE clubs (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE preferences (
+CREATE TABLE IF NOT EXISTS preferences (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL UNIQUE,
     sleep_hours FLOAT NOT NULL,
@@ -63,7 +52,7 @@ CREATE TABLE preferences (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE generated_schedules (
+CREATE TABLE IF NOT EXISTS generated_schedules (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     schedule_json LONGTEXT NOT NULL,
