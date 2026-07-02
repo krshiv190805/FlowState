@@ -1,13 +1,26 @@
 import streamlit as st
+
+# ── MUST be the very first Streamlit call ──────────────────────────────────────
+st.set_page_config(page_title="FlowState", layout="wide")
+
 from datetime import datetime, time
 import pandas as pd
 import json
 import db, scheduler, analytics, utils, recommendation
 
-db.init_db()
-db.seed_db()
+# ── Database initialisation ────────────────────────────────────────────────────
+try:
+    db.init_db()
+    db.seed_db()
+except Exception as e:
+    st.error(
+        f"⚠️ **Could not connect to the database.**\n\n"
+        f"Error: `{e}`\n\n"
+        "If you are running on **Streamlit Cloud**, make sure you have added your "
+        "database credentials under **App Settings → Secrets**."
+    )
+    st.stop()
 
-st.set_page_config(page_title="FlowState", layout="wide")
 st.title("⏱️ FlowState - Intelligent Academic Scheduling & Productivity Platform")
 
 users = db.execute_query("SELECT id, name FROM users")

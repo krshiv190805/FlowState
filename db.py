@@ -25,7 +25,9 @@ def get_conn(use_db=True):
             user=DB_USER,
             password=DB_PASSWORD,
             port=DB_PORT,
-            database=DB_NAME if use_db else None
+            database=DB_NAME if use_db else None,
+            connection_timeout=10,
+            connect_timeout=10
         )
         return connection
     except mysql.connector.Error as err:
